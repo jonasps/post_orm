@@ -142,7 +142,6 @@ class Table:
 class ForeignKey:
     def __init__(self, table) -> None:
         self.table = table
-        pass
 
 
 class Column:
