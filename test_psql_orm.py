@@ -1,13 +1,14 @@
 # test_orm.py
 import os
-import sqlite3
+import psycopg2
 
 import pytest
 
-from orm import Database, Table, Column, ForeignKey
+from psql_orm import Database, Table, Column, ForeignKey
 
 
 # fixtures
+
 
 @pytest.fixture
 def Author():
@@ -30,16 +31,17 @@ def Book(Author):
 
 # tests
 
+
 @pytest.fixture
 def db():
-    DB_PATH = "./test.db"
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
-    db = Database(DB_PATH)
+    db = Database(
+        database="mydb", user="postgres", password="1234", host="localhost", port="5432"
+    )
+    db.destroy_and_reset_public_schema()
     return db
 
+
 def test_create_db(db):
-    assert isinstance(db.conn, sqlite3.Connection)
     assert db.tables == []
 
 
@@ -54,8 +56,14 @@ def test_create_tables(db, Author, Book):
     db.create(Author)
     db.create(Book)
 
-    assert Author._get_create_sql() == "CREATE TABLE IF NOT EXISTS author (id INTEGER PRIMARY KEY AUTOINCREMENT, age INTEGER, name TEXT);"
-    assert Book._get_create_sql() == "CREATE TABLE IF NOT EXISTS book (id INTEGER PRIMARY KEY AUTOINCREMENT, author_fk INTEGER, published INTEGER, title TEXT);"
+    assert (
+        Author._get_create_sql()
+        == "CREATE TABLE IF NOT EXISTS author (id BIGSERIAL PRIMARY KEY, age INTEGER, name TEXT);"
+    )
+    assert (
+        Book._get_create_sql()
+        == "CREATE TABLE IF NOT EXISTS book (id BIGSERIAL PRIMARY KEY, author_fk INTEGER, published BOOL, title TEXT);"
+    )
 
     for table in ("author", "book"):
         assert table in db.tables
@@ -64,33 +72,33 @@ def test_create_tables(db, Author, Book):
 def test_create_author_instance(db, Author):
     db.create(Author)
 
-    john = Author(name="John Doe", age=35)
+    john = Author(name="John Doe", age=25)
 
     assert john.name == "John Doe"
-    assert john.age == 35
+    assert john.age == 25
     assert john.id is None
 
 
 def test_save_author_instances(db, Author):
     db.create(Author)
 
-    john = Author(name="John Doe", age=23)
+    john = Author(name="John", age=23)
     db.save(john)
     assert john._get_insert_sql() == (
-        "INSERT INTO author (age, name) VALUES (?, ?);",
-        [23, "John Doe"]
+        "INSERT INTO author (age, name) VALUES (%s, %s) RETURNING id;",
+        [23, "John"],
     )
     assert john.id == 1
 
-    man = Author(name="Man Harsh", age=28)
+    man = Author(name="Man", age=28)
     db.save(man)
     assert man.id == 2
 
-    vik = Author(name="Vik Star", age=43)
+    vik = Author(name="Vik", age=43)
     db.save(vik)
     assert vik.id == 3
 
-    jack = Author(name="Jack Ma", age=39)
+    jack = Author(name="Jack", age=39)
     db.save(jack)
     assert jack.id == 4
 
@@ -98,7 +106,7 @@ def test_save_author_instances(db, Author):
 def test_query_all_authors(db, Author):
     db.create(Author)
     john = Author(name="John Doe", age=23)
-    vik = Author(name="Vik Star", age=43)
+    vik = Author(name="Vik", age=43)
     db.save(john)
     db.save(vik)
 
@@ -106,12 +114,12 @@ def test_query_all_authors(db, Author):
 
     assert Author._get_select_all_sql() == (
         "SELECT id, age, name FROM author;",
-        ["id", "age", "name"]
+        ["id", "age", "name"],
     )
     assert len(authors) == 2
     assert type(authors[0]) == Author
     assert {a.age for a in authors} == {23, 43}
-    assert {a.name for a in authors} == {"John Doe", "Vik Star"}
+    assert {a.name for a in authors} == {"John Doe", "Vik"}
 
 
 def test_get_author(db, Author):
@@ -122,9 +130,9 @@ def test_get_author(db, Author):
     john_from_db = db.get(Author, id=1)
 
     assert Author._get_select_where_sql(id=1) == (
-        "SELECT id, age, name FROM author WHERE id = ?;",
+        "SELECT id, age, name FROM author WHERE id = %s;",
         ["id", "age", "name"],
-        [1]
+        [1],
     )
     assert type(john_from_db) == Author
     assert john_from_db.age == 43
@@ -136,9 +144,9 @@ def test_get_book(db, Author, Book):
     db.create(Author)
     db.create(Book)
     john = Author(name="John Doe", age=43)
-    arash = Author(name="Arash Kun", age=50)
-    book = Book(title="Building an ORM", published=False, author=john)
-    book2 = Book(title="Scoring Goals", published=True, author=arash)
+    arash = Author(name="Arash", age=50)
+    book = Book(title="Building", published=False, author=john)
+    book2 = Book(title="Scoring", published=True, author=arash)
     db.save(john)
     db.save(arash)
     db.save(book)
@@ -146,8 +154,8 @@ def test_get_book(db, Author, Book):
 
     book_from_db = db.get(Book, 2)
 
-    assert book_from_db.title == "Scoring Goals"
-    assert book_from_db.author.name == "Arash Kun"
+    assert book_from_db.title == "Scoring"
+    assert book_from_db.author.name == "Arash"
     assert book_from_db.author.id == 2
 
 
@@ -155,9 +163,9 @@ def test_query_all_books(db, Author, Book):
     db.create(Author)
     db.create(Book)
     john = Author(name="John Doe", age=43)
-    arash = Author(name="Arash Kun", age=50)
-    book = Book(title="Building an ORM", published=False, author=john)
-    book2 = Book(title="Scoring Goals", published=True, author=arash)
+    arash = Author(name="Arash", age=50)
+    book = Book(title="Building", published=False, author=john)
+    book2 = Book(title="Scoring", published=True, author=arash)
     db.save(john)
     db.save(arash)
     db.save(book)
@@ -166,7 +174,7 @@ def test_query_all_books(db, Author, Book):
     books = db.all(Book)
 
     assert len(books) == 2
-    assert books[1].author.name == "Arash Kun"
+    assert books[1].author.name == "Arash"
 
 
 def test_update_author(db, Author):
@@ -175,13 +183,13 @@ def test_update_author(db, Author):
     db.save(john)
 
     john.age = 43
-    john.name = "John Wick"
+    john.name = "John Doe"
     db.update(john)
 
     john_from_db = db.get(Author, id=john.id)
 
     assert john_from_db.age == 43
-    assert john_from_db.name == "John Wick"
+    assert john_from_db.name == "John Doe"
 
 
 def test_delete_author(db, Author):
