@@ -13,7 +13,7 @@ db = Database(
     port="5432",
 )
 
-#  Create tables
+# Create tables
 class School(Table):
     country = Column(str)
     name = Column(str)
