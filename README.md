@@ -12,7 +12,7 @@ Preferably installation the ORM in a virtual environment.
 The code is heavily inspiered by the SQLite ORM in [this course](https://testdriven.io/authors/rahmonov/) on testdriven.io
 
 ## Example
-```
+```python
 from psql_orm import Database, Column, Table, ForeignKey
 
 db = Database(
