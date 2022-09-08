@@ -35,9 +35,17 @@ def Book(Author):
 @pytest.fixture
 def db():
     db = Database(
-        database="mydb", user="postgres", password="1234", host="localhost", port="5432"
+        database="test_database", user="postgres", password="1234", host="localhost", port="5432"
     )
-    db.destroy_and_reset_public_schema()
+    # BE AWARE, this will clear all tabels in the *test_database*.
+    # Do not run agains any real data.
+    cursor = db.conn.cursor()
+    DROP_TABLES_SQL = "DROP SCHEMA public CASCADE;"
+    CREATE_TABLES_SQL = "CREATE SCHEMA public;"
+    cursor.execute(DROP_TABLES_SQL)
+    db.conn.commit()
+    cursor.execute(CREATE_TABLES_SQL)
+    db.conn.commit()
     return db
 
 

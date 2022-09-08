@@ -229,15 +229,6 @@ class Database:
         cursor.execute(*instance._get_update_sql())
         self.conn.commit()
 
-    def destroy_and_reset_public_schema(self):
-        cursor = self.conn.cursor()
-        DROP_TABLES_SQL = "DROP SCHEMA public CASCADE;"
-        CREATE_TABLES_SQL = "CREATE SCHEMA public;"
-        cursor.execute(DROP_TABLES_SQL)
-        self.conn.commit()
-        cursor.execute(CREATE_TABLES_SQL)
-        self.conn.commit()
-
     @property
     def tables(self) -> list:
         cursor = self.conn.cursor()
