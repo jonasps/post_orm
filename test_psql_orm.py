@@ -35,7 +35,11 @@ def Book(Author):
 @pytest.fixture
 def db():
     db = Database(
-        database="test_database", user="postgres", password="1234", host="localhost", port="5432"
+        database="test_database",
+        user="postgres",
+        password="1234",
+        host="localhost",
+        port="5432",
     )
     # BE AWARE, this will clear all tabels in the *test_database*.
     # Do not run agains any real data.

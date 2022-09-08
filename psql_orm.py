@@ -1,5 +1,6 @@
 import inspect
 import psycopg2
+from typing import List
 
 
 class Table:
@@ -63,6 +64,31 @@ class Table:
         sql = SELECT_ALL_SQL.format(name=cls.__name__.lower(), fields=", ".join(fields))
 
         return sql, fields
+
+    @classmethod
+    def _get_query_sql(cls, query_items):
+        where_clause = ""
+        query_values = []
+        for q in query_items:
+            where_clause += q[0] + " LIKE %s AND "
+            query_values.append(q[1])
+        where_clause = where_clause[:-5]
+        SELECT_ALL_SQL = "SELECT {fields} FROM {name} WHERE {where_clause};"
+
+        fields = ["id"]
+        for name, field in inspect.getmembers(cls):
+            if isinstance(field, Column):
+                fields.append(name)
+            if isinstance(field, ForeignKey):
+                fields.append(name + "_fk")
+
+        sql = SELECT_ALL_SQL.format(
+            name=cls.__name__.lower(),
+            fields=", ".join(fields),
+            where_clause=where_clause,
+        )
+
+        return sql, fields, query_values
 
     @classmethod
     def _get_create_sql(cls):
@@ -173,12 +199,17 @@ class Database:
         cursor.execute(table._get_create_sql())
         self.conn.commit()
 
-    def save(self, instance: Table):
-        sql, values = instance._get_insert_sql()
-        cursor = self.conn.cursor()
-        cursor.execute(sql, values)
-        self.conn.commit()
-        instance._data["id"] = cursor.fetchone()[0]
+    def save(self, save):
+        if type(save) == list:
+            instances = save
+        else:
+            instances = [save]
+        for instance in instances:
+            sql, values = instance._get_insert_sql()
+            cursor = self.conn.cursor()
+            cursor.execute(sql, values)
+            self.conn.commit()
+            instance._data["id"] = cursor.fetchone()[0]
 
     def get(self, table: Table, id: str):
         sql, fields, params = table._get_select_where_sql(id=id)
@@ -199,6 +230,22 @@ class Database:
                 value = self.get(fk.table, id=value)
             setattr(instance, field, value)
         return instance
+
+    def query(self, table: Table, **kwargs):
+        sql, fields, query_values = table._get_query_sql(query_items=kwargs.items())
+        cursor = self.conn.cursor()
+        result = []
+        cursor.execute(sql, query_values)
+        for row in cursor.fetchall():
+            instance = table()
+            for field, value in zip(fields, row):
+                if field.endswith("_fk"):
+                    field = field[:-3]
+                    fk = getattr(table, field)
+                    value = self.get(fk.table, id=value)
+                setattr(instance, field, value)
+            result.append(instance)
+        return result
 
     def delete(self, table: Table, id: str):
         sql, params = table._get_delete_sql(id=id)
