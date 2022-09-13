@@ -189,6 +189,27 @@ def test_query_all_books(db, Author, Book):
     assert books[1].author.name == "Arash"
 
 
+def test_query_specific_book(db, Author, Book):
+    db.create(Author)
+    db.create(Book)
+    dostoevsky = Author(name="dostoevsky", age=43)
+    hemingway = Author(name="Hemingway", age=50)
+    book = Book(title="Notes from Underground", published=True, author=dostoevsky)
+    book2 = Book(title="The old man and the sea", published=True, author=hemingway)
+    book3 = Book(title="A Room on the Garden Side", published=False, author=hemingway)
+    db.save(dostoevsky)
+    db.save(hemingway)
+    db.save(book)
+    db.save(book2)
+    db.save(book3)
+
+    wildcard = db.query(Book, title="Notes %")[0]
+    not_published = db.query(Book, published=False)[0]
+
+    assert wildcard.title == "Notes from Underground"
+    assert not_published.title == "A Room on the Garden Side"
+
+
 def test_update_author(db, Author):
     db.create(Author)
     john = Author(name="John Doe", age=23)

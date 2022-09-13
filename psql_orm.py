@@ -1,6 +1,5 @@
 import inspect
 import psycopg2
-from typing import List
 
 
 class Table:
@@ -70,7 +69,10 @@ class Table:
         where_clause = ""
         query_values = []
         for q in query_items:
-            where_clause += q[0] + " LIKE %s AND "
+            if not type(q[1]) == bool:
+                where_clause += q[0] + " LIKE %s AND "
+            else:
+                where_clause += q[0] + " IS %s AND "
             query_values.append(q[1])
         where_clause = where_clause[:-5]
         SELECT_ALL_SQL = "SELECT {fields} FROM {name} WHERE {where_clause};"
