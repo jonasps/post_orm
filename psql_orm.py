@@ -234,7 +234,11 @@ class Database:
         return instance
 
     def query(self, table: Table, **kwargs):
-        sql, fields, query_values = table._get_query_sql(query_items=kwargs.items())
+        query_items=kwargs
+        limit = query_items.pop("limit", False)
+        sql, fields, query_values = table._get_query_sql(query_items=query_items.items())
+        if limit:
+            sql = sql[:-1] + f" LIMIT {limit};"
         cursor = self.conn.cursor()
         result = []
         cursor.execute(sql, query_values)
@@ -247,6 +251,8 @@ class Database:
                     value = self.get(fk.table, id=value)
                 setattr(instance, field, value)
             result.append(instance)
+        if limit == 1:
+                return result[0]
         return result
 
     def delete(self, table: Table, id: str):
