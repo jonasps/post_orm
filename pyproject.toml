@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psql_orm"
+version = "0.0.1"
+authors = [
+  { name="Jonas Sandström", email="jonasliu89@gmail.com" },
+]
+description = "A minimal ORM for PostgreSQL"
+dependencies = [
+    "psycopg2-binary>=2.9.5"
+]
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.1.3",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jonasps/psql_orm"

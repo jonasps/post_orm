@@ -1,4 +1,4 @@
-from psql_orm import Database, Column, Table, ForeignKey
+from src.psql_orm import Database, Column, Table, ForeignKey
 
 db = Database(
     database="test_database",
@@ -33,7 +33,7 @@ db.save([harry, ron])
 
 # Make queries
 all_students = db.all(Student)
-harrys_school = db.query(Student, name="Harry Potter")[0].school
-hogwarts = db.query(School, country="Eng%")[0]  # use % for wildcard search.
+harrys_school = db.query(Student, name="Harry Potter", limit=1).school
+hogwarts = db.query(School, country="Eng%", limit=1)  # use % for wildcard search.
 print(harrys_school.country, hogwarts.country)
 assert harrys_school.country == hogwarts.country

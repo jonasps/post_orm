@@ -49,7 +49,7 @@ assert harrys_school.country == hogwarts.country
 ```psql postgresql://postgres:1234@localhost:5432/postgres``` <br />
 ```CREATE DATABASE test_database;``` <br />
 Preferably installation the ORM in a virtual environment.
-```pip install -r requirements.txt```<br />
+```pip install -e .```<br />
 ```python -m pytest .```<br />
 
 The code is heavily inspiered by the SQLite ORM in [this course](https://testdriven.io/authors/rahmonov/) on testdriven.io

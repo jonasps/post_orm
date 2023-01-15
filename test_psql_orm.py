@@ -4,7 +4,7 @@ import psycopg2
 
 import pytest
 
-from psql_orm import Database, Table, Column, ForeignKey
+from src.psql_orm import Database, Table, Column, ForeignKey
 
 
 # fixtures
@@ -106,7 +106,7 @@ def test_save_author_instances(db, Author):
     db.save(man)
     assert man.id == 2
 
-    vik = Author(name="Vik", age=43)
+    vik = Author(name="Viktor", age=43)
     db.save(vik)
     assert vik.id == 3
 
@@ -118,7 +118,7 @@ def test_save_author_instances(db, Author):
 def test_query_all_authors(db, Author):
     db.create(Author)
     john = Author(name="John Doe", age=23)
-    vik = Author(name="Vik", age=43)
+    vik = Author(name="Viktor", age=43)
     db.save(john)
     db.save(vik)
 
@@ -131,7 +131,7 @@ def test_query_all_authors(db, Author):
     assert len(authors) == 2
     assert type(authors[0]) == Author
     assert {a.age for a in authors} == {23, 43}
-    assert {a.name for a in authors} == {"John Doe", "Vik"}
+    assert {a.name for a in authors} == {"John Doe", "Viktor"}
 
 
 def test_get_author(db, Author):
@@ -156,18 +156,18 @@ def test_get_book(db, Author, Book):
     db.create(Author)
     db.create(Book)
     john = Author(name="John Doe", age=43)
-    arash = Author(name="Arash", age=50)
+    abc = Author(name="ABC", age=50)
     book = Book(title="Building", published=False, author=john)
-    book2 = Book(title="Scoring", published=True, author=arash)
+    book2 = Book(title="Scoring", published=True, author=abc)
     db.save(john)
-    db.save(arash)
+    db.save(abc)
     db.save(book)
     db.save(book2)
 
     book_from_db = db.get(Book, 2)
 
     assert book_from_db.title == "Scoring"
-    assert book_from_db.author.name == "Arash"
+    assert book_from_db.author.name == "ABC"
     assert book_from_db.author.id == 2
 
 
@@ -175,7 +175,7 @@ def test_query_all_books(db, Author, Book):
     db.create(Author)
     db.create(Book)
     john = Author(name="John Doe", age=43)
-    arash = Author(name="Arash", age=50)
+    arash = Author(name="ABC", age=50)
     book = Book(title="Building", published=False, author=john)
     book2 = Book(title="Scoring", published=True, author=arash)
     db.save(john)
@@ -186,7 +186,7 @@ def test_query_all_books(db, Author, Book):
     books = db.all(Book)
 
     assert len(books) == 2
-    assert books[1].author.name == "Arash"
+    assert books[1].author.name == "ABC"
 
 
 def test_query_with_limit(db, Author, Book):
