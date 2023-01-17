@@ -4,7 +4,7 @@ import psycopg2
 
 import pytest
 
-from src.psql_orm import Database, Table, Column, ForeignKey
+from src.post_orm import Database, Table, Column, ForeignKey
 
 
 # fixtures

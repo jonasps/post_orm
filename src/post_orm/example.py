@@ -1,4 +1,4 @@
-from src.psql_orm import Database, Column, Table, ForeignKey
+from src.post_orm import Database, Column, Table, ForeignKey
 
 db = Database(
     database="test_database",

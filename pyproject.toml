@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "psql_orm"
+name = "post_orm"
 version = "0.0.1"
 authors = [
   { name="Jonas Sandström", email="jonasliu89@gmail.com" },
@@ -26,4 +26,4 @@ test = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/jonasps/psql_orm"
+"Homepage" = "https://github.com/jonasps/post_orm"
