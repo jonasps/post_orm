@@ -22,7 +22,7 @@ class Table:
         if key in self._data:
             self._data[key] = value
 
-    def _get_insert_sql(self) -> tuple[str, list]:
+    def _get_insert_sql(self):
         INSERT_SQL = (
             "INSERT INTO {name} ({fields}) VALUES ({placeholders}) RETURNING id;"
         )
