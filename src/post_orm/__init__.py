@@ -3,6 +3,8 @@ import psycopg2
 
 
 class Table:
+    """Abstract class, inherit from this when declaring an ORM object."""
+
     def __init__(self, **kwargs) -> None:
         self._data = {
             "id": None,
@@ -168,11 +170,21 @@ class Table:
 
 
 class ForeignKey:
+    """Declares foreign key relationships between ORM objects.
+
+    Use ´name = ForeignKey(*ORM Object*)´ to declare a class variables just ´Column´.
+    """
+
     def __init__(self, table) -> None:
         self.table = table
 
 
 class Column:
+    """A ´Column´ should inherit from a python type (int, float, str, bytes, bool).
+
+    Use ´name = Column(*type*) to declare a class variable for an ORM object.´
+    """
+
     def __init__(self, column_type) -> None:
         self.type = column_type
 
@@ -189,6 +201,11 @@ class Column:
 
 
 class Database:
+    """In charge of connecting to the Postgres databse.
+
+    This class is a wrapper around ´psycopg2´.
+    """
+
     def __init__(
         self, database: str, user: str, password: str, host: str, port: str
     ) -> None:
@@ -234,9 +251,11 @@ class Database:
         return instance
 
     def query(self, table: Table, **kwargs):
-        query_items=kwargs
+        query_items = kwargs
         limit = query_items.pop("limit", False)
-        sql, fields, query_values = table._get_query_sql(query_items=query_items.items())
+        sql, fields, query_values = table._get_query_sql(
+            query_items=query_items.items()
+        )
         if limit:
             sql = sql[:-1] + f" LIMIT {limit};"
         cursor = self.conn.cursor()
@@ -252,7 +271,7 @@ class Database:
                 setattr(instance, field, value)
             result.append(instance)
         if limit == 1:
-                return result[0]
+            return result[0]
         return result
 
     def delete(self, table: Table, id: str):
