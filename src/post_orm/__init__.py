@@ -274,13 +274,14 @@ class Database:
             return result[0]
         return result
 
-    def delete(self, table: Table, id: str):
-        sql, params = table._get_delete_sql(id=id)
+    def delete(self, instance):
+        table = type(instance)
+        sql, params = table._get_delete_sql(id=instance.id)
         try:
             cursor = self.conn.cursor()
             cursor.execute(sql, params)
         except:
-            raise Exception(f"No {table.__name__} instance with id {id}")
+            raise Exception(f"No {table.__name__} instance with id {instance.id}")
 
     def all(self, table: Table):
         sql, fields = table._get_select_all_sql()

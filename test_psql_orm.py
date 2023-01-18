@@ -253,7 +253,7 @@ def test_delete_author(db, Author):
     john = Author(name="John Doe", age=23)
     db.save(john)
 
-    db.delete(Author, id=1)
+    db.delete(john)
 
     with pytest.raises(Exception):
         db.get(Author, 1)
