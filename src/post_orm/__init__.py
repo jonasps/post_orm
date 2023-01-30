@@ -213,17 +213,19 @@ class Database:
             database=database, user=user, password=password, host=host, port=port
         )
 
+    def _generate_list(self, args):
+        if type(args) == list:
+            return args
+        return [args]
+
     def create(self, table):
-        cursor = self.conn.cursor()
-        cursor.execute(table._get_create_sql())
-        self.conn.commit()
+        for instance in self._generate_list(table):
+            cursor = self.conn.cursor()
+            cursor.execute(instance._get_create_sql())
+            self.conn.commit()
 
     def save(self, save):
-        if type(save) == list:
-            instances = save
-        else:
-            instances = [save]
-        for instance in instances:
+        for instance in self._generate_list(save):
             sql, values = instance._get_insert_sql()
             cursor = self.conn.cursor()
             cursor.execute(sql, values)
