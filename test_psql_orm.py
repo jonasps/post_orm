@@ -65,8 +65,8 @@ def test_define_tables(Author, Book):
 
 
 def test_create_tables(db, Author, Book):
-    db.create(Author)
-    db.create(Book)
+    db.create([Author, Book])
+
 
     assert (
         Author._get_create_sql()
@@ -119,8 +119,7 @@ def test_query_all_authors(db, Author):
     db.create(Author)
     john = Author(name="John Doe", age=23)
     vik = Author(name="Viktor", age=43)
-    db.save(john)
-    db.save(vik)
+    db.save([john, vik])
 
     authors = db.all(Author)
 
@@ -175,13 +174,11 @@ def test_query_all_books(db, Author, Book):
     db.create(Author)
     db.create(Book)
     john = Author(name="John Doe", age=43)
-    arash = Author(name="ABC", age=50)
+    abc = Author(name="ABC", age=50)
     book = Book(title="Building", published=False, author=john)
-    book2 = Book(title="Scoring", published=True, author=arash)
-    db.save(john)
-    db.save(arash)
-    db.save(book)
-    db.save(book2)
+    book2 = Book(title="Scoring", published=True, author=abc)
+    db.save([john, abc, book, book2])
+
 
     books = db.all(Book)
 

@@ -19,8 +19,7 @@ class Student(Table):
     school = ForeignKey(School)
 
 
-db.create(School)
-db.create(Student)
+db.create([School, Student])
 
 # Save school
 school = School(name="Hogwarts", country="England")
